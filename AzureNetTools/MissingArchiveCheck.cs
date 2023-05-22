@@ -47,7 +47,7 @@ namespace AzureNetTools
 
             if (missingContainer)
             {
-                throw new Exception("Missing containers");
+                throw new Exception("Missing containers, check logs for more information");
             }
         }
 
@@ -65,7 +65,6 @@ namespace AzureNetTools
         }
         private async Task ProcessMissingArchive(string yesterdayFileName, string container)
         {
-
             await SendWithSendGrid(yesterdayFileName, container);
         }
 
@@ -74,8 +73,8 @@ namespace AzureNetTools
             var msg = new SendGridMessage()
             {
                 From = new EmailAddress(Settings.SendGrid.Sender.Address, Settings.SendGrid.Sender.Name),
-                Subject = $"Warning: Missing archive file",
-                PlainTextContent = $"The archive file '{yesterdayFileName}' is missing from azure container: {container}.",
+                Subject = $"Warning: Missing azure archive",
+                PlainTextContent = $"The archive file with name '{yesterdayFileName}' is missing from azure container: {container}.",
             };
 
             msg.AddTo(new EmailAddress(Settings.SendGrid.Sender.Address, string.Empty));
