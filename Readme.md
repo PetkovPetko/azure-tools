@@ -8,12 +8,9 @@ If archive is missing it sends an email to the configured email address. The fil
 
 ## Installation
 Environment variables are used to configure the function. The following are used:
-- **AzureWebJobsStorage**: connection string to the storage account
-- **SendGrid_ApiKey**: api key for sendgrid
-- **SendGrid_Email**: email address to send the email from
-- **SendGrid_Sender_Address**: email address to be notified
-- **SendGrid_Sender_Name**: name of the sender
-- **CheckedContainers**: comma separated list of containers to check
+- **AzureWebJobsStorage**: connection strings to the storage accounts separated by '||'
+- **CheckedContainers**: name of the container to check for uploaded backup
+- **TEAMS_WEBHOOK_URL**: teams channel, where a post will be made if missing a backup file
 
 ## Contributing
 
