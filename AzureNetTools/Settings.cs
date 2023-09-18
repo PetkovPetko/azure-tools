@@ -4,7 +4,7 @@ namespace AzureNetTools
 {
     internal static class Settings
     {
-        public static string[] Connections => Environment.GetEnvironmentVariable("AzureWebJobsStorage").Split("||");
+        public static string[] Connections => Environment.GetEnvironmentVariable("AzureStorageConnections").Split("||");
 
         public static string Container => Environment.GetEnvironmentVariable("CheckedContainers");
 

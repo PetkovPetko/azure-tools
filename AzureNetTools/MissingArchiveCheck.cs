@@ -1,19 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 
 namespace AzureNetTools
 {
@@ -21,7 +17,7 @@ namespace AzureNetTools
     {
         [FunctionName("MissingArchiveCheck")]
         public async Task Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [TimerTrigger("0 0 7 * * *")] TimerInfo myTimer,
             ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
@@ -49,27 +45,6 @@ namespace AzureNetTools
             }
         }
 
-        /*
-        [FunctionName("MissingArchiveCheck")]
-        public async Task Run([TimerTrigger("0 0 7 * * *")]TimerInfo myTimer, ILogger log)
-        {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-
-            CheckIfContainersExists(log);
-
-            var yesterdayFileName = $"{DateTime.Now.AddDays(-1).ToString("yyyyMMdd")}.tgz";
-
-            foreach (var container in Settings.Containers)
-            {
-                var exists = DoesArchiveExist(container, yesterdayFileName, log);
-                if (!exists)
-                {
-                    await ProcessMissingArchive(yesterdayFileName, container);
-                }
-            }
-        }
-        */
-
         private void CheckIfContainersExists(BlobServiceClient blobServiceClient, ILogger log, string container)
         {
             var missingContainer = false;
@@ -89,7 +64,6 @@ namespace AzureNetTools
 
         private bool DoesArchiveExist(BlobServiceClient blobServiceClient, string containerName, string fileName, ILogger log)
         {
-            return false;
             var container = blobServiceClient.GetBlobContainerClient(containerName);
             var blob = container.GetBlobClient(fileName);
             var exists = blob.Exists();
