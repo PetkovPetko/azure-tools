@@ -104,7 +104,7 @@ namespace AzureNetTools
                 },
                 new Fact
                 {
-                    Name = "Missing file",
+                    Name = "Expected file",
                     Value = yesterdayFileName
                 }
             };
@@ -120,7 +120,7 @@ namespace AzureNetTools
                 Context = "http://schema.org/extensions",
                 ThemeColor = "00FF00",
                 Title = "Missing Azure backup",
-                Text = $"*Missing backup for {DateTime.Now.AddDays(-1).ToString("dd:MM:yyyy")}*",
+                Text = $"*Missing backup for {DateTime.Now.AddDays(-1).ToString("dd.MM.yyyy")}*",
                 Sections = sections
             };
 
