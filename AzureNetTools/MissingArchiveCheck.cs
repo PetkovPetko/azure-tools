@@ -4,11 +4,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Newtonsoft.Json;
 
 namespace AzureNetTools
@@ -17,25 +20,28 @@ namespace AzureNetTools
     {
         [FunctionName("MissingArchiveCheck")]
         public async Task Run(
-            [TimerTrigger("0 0 7 * * *")] TimerInfo myTimer,
+            [TimerTrigger("0 0 10 * * *")] TimerInfo myTimer,
             ILogger log)
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
             var yesterdayFileName = $"{DateTime.Now.AddDays(-1).ToString("yyyyMMdd")}.tgz";
-            var container = Settings.Container;
+            var containerName = Settings.Container;
             List<Section> sections = new();
 
             foreach (var connection in Settings.Connections)
-            {
-                BlobServiceClient blobServiceClient = new BlobServiceClient(connection.Trim());
+            { 
+                var defaultCredentials = new DefaultAzureCredential();
+                var blobServiceUri = new Uri(connection);
+                
+                BlobServiceClient blobServiceClient = new BlobServiceClient(blobServiceUri, defaultCredentials);
 
-                CheckIfContainersExists(blobServiceClient, log, container);
+                CheckIfContainersExists(blobServiceClient, log, containerName);
 
-                var exists = DoesArchiveExist(blobServiceClient, container, yesterdayFileName, log);
+                var exists = DoesArchiveExist(blobServiceClient, containerName, yesterdayFileName, log);
                 if (!exists)
                 {
-                    sections.Add(this.CreateCardSection(yesterdayFileName, container, blobServiceClient.AccountName));
+                    sections.Add(this.CreateCardSection(yesterdayFileName, containerName, blobServiceClient.AccountName));
                 }
             }
 
@@ -64,14 +70,9 @@ namespace AzureNetTools
 
         private bool DoesArchiveExist(BlobServiceClient blobServiceClient, string containerName, string fileName, ILogger log)
         {
-            var container = blobServiceClient.GetBlobContainerClient(containerName);
-            var blob = container.GetBlobClient(fileName);
-            var exists = blob.Exists();
-            if (!exists)
-            {
-                log.LogInformation($"{containerName} does not exist");
-            }
-            return exists;
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var blobClient = containerClient.GetBlobClient(fileName);
+            return blobClient.Exists();
         }
 
         private Section CreateCardSection(string yesterdayFileName, string container, string storageAccountName)
