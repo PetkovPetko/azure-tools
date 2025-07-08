@@ -23,9 +23,13 @@ namespace AzureNetTools
             [TimerTrigger("0 0 10 * * *")] TimerInfo myTimer,
             ILogger log)
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            TimeZoneInfo sofiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("FLE Standard Time");
+            DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, sofiaTimeZone);
 
-            var yesterdayFileName = $"{DateTime.Now.AddDays(-1).ToString("yyyyMMdd")}.tgz";
+            string message = $"C# Timer trigger function executed at: {localTime}";
+            log.LogInformation(message);
+
+            var yesterdayFileName = $"{localTime.AddDays(-1).ToString("yyyyMMdd")}.tgz";
             var containerName = Settings.Container;
             List<Section> sections = new();
 
@@ -47,7 +51,7 @@ namespace AzureNetTools
 
             if (sections.Any())
             {
-                await CreateTeamsCard(sections);
+                await CreateTeamsCard(sections, localTime);
             }
         }
 
@@ -113,7 +117,7 @@ namespace AzureNetTools
             return facts;
         }
 
-        private async Task CreateTeamsCard(List<Section> sections)
+        private async Task CreateTeamsCard(List<Section> sections, DateTime localTime)
         {
             var card = new TeamsCard
             {
@@ -121,7 +125,7 @@ namespace AzureNetTools
                 Context = "http://schema.org/extensions",
                 ThemeColor = "00FF00",
                 Title = "Missing Azure backup",
-                Text = $"*Missing backup for {DateTime.Now.AddDays(-1).ToString("dd.MM.yyyy")}*",
+                Text = $"*Missing backup for {localTime.AddDays(-1).ToString("dd.MM.yyyy")}*",
                 Sections = sections
             };
 
